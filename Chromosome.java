@@ -4,7 +4,7 @@ public class Chromosome {
     private ArrayList<ArrayList<Integer>> solution;
     private double fitness;
     public Chromosome(ArrayList<ArrayList<Integer>> solution, double fitness){
-        this.solution=solution;
+        this.solution=new ArrayList<>(solution);
         this.fitness=fitness;
     }
 

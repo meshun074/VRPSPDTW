@@ -1,4 +1,5 @@
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.Random;
 
 public class Population {
@@ -6,13 +7,14 @@ public class Population {
     private static Random random;
     public static ArrayList<Chromosome> initializePopulation(int PopSize, VRPInstance vrpInstance){
         instance = vrpInstance;
+        //System.out.println(instance.getNodes().size());
         ArrayList<Chromosome> population = new ArrayList<>();
         ArrayList<ArrayList<Integer>> chromosome=new ArrayList<>();
 //        ArrayList<Integer> route = new ArrayList<>();
-        ArrayList<Integer> customerInRoute = new ArrayList<>();
+        HashSet<Integer> customerInRoute = new HashSet<>();
         random = new Random();
 //        int nextCustomer = random.nextInt(1,instance.getNodes().size());
-        int nextCustomer = getNearestCustomer(new Route(0,instance.getNodes().get(0),instance.getNodesDistance().get("1,0")),new ArrayList<>(){{add(0);}});
+        int nextCustomer = getNearestCustomer(new Route(0,instance.getNodes().get(0),instance.getNodesDistance().get("1,0")),new HashSet<>(){{add(0);}});
 //        System.out.println(nextCustomer);
 //        System.exit(1);
 //        route.add(nextCustomer);
@@ -23,6 +25,9 @@ public class Population {
                 if(i==1) {
                     nextCustomer = getNearestCustomer(r, customerInRoute);
                     //System.out.println(customerInRoute);
+//                    if(nextCustomer==60) {
+//                        System.out.println(" yand fff"+r.getCustomers()+i);
+//                    }
                 }
                 else
                     nextCustomer = getRandomCustomer(customerInRoute);
@@ -33,12 +38,23 @@ public class Population {
 //                        System.out.println(feasibility(r, nextCustomer));
 //                    }
                     if (feasibility(r, nextCustomer)) {
-
                         r.addCustomers(nextCustomer,instance.getNodes().get(nextCustomer),instance.getNodesDistance().get(r.getCustomers().getLast()+","+nextCustomer));
+//                        if(nextCustomer==16&& i==1) {
+//                            System.out.println(" yand "+r.getCustomers());
+//                        }
                         //System.out.println(r.getCustomers());
                         customerInRoute.add(nextCustomer);
 //                        System.out.println(customerInRoute);
                     } else {
+//                        if(nextCustomer==60&& i==1) {
+//                            System.out.println(" yand "+r.getCustomers());
+//                        }
+//                        if(r.getCustomers().contains(60) && i ==1) {
+//                            System.out.println(" yand ttt"+r.getCustomers()+i);
+//                        }
+//                        if(r.getCustomers().contains(16) && i ==1)
+//                            System.out.println("yon khhuhiuihhhjkhkhkh"+chromosome.getLast());
+//                        System.out.println("Addiing "+r.getCustomers());
                         chromosome.add(new ArrayList<>(r.getCustomers()));
                         //System.out.println(chromosome);
                         //System.out.println(r.getCurrentCapacity()+" "+r.getTotalTime());
@@ -54,10 +70,21 @@ public class Population {
 //                        }
                     }
                 }
+
+
                 if(customerInRoute.size()==instance.getNodes().size()-1){
+                    //Test
+//                    if(population.size()<1){
+//                        System.out.println(customerInRoute.size() + " == " + (instance.getNodes().size() - 1));
+//                        //System.out.println(customerInRoute);
+//                    }
+                    if(!chromosome.contains(r.getCustomers()))
+                    {
+                        chromosome.add(new ArrayList<>(r.getCustomers()));
+                    }
                     population.add(new Chromosome(chromosome,0.0));
                     //System.out.println(population);
-                    customerInRoute = new ArrayList<>();
+                    customerInRoute = new HashSet<>();
                     break;
                 }
             }
@@ -68,10 +95,9 @@ public class Population {
             customerInRoute.add(nextCustomer);
             r =  new Route(nextCustomer,instance.getNodes().get(nextCustomer),instance.getNodesDistance().get("0,"+nextCustomer));
         }
-        //System.out.println(population.getFirst());
         return population;
     }
-    private static int getNearestCustomer(Route route, ArrayList<Integer> customerInRoute){
+    private static int getNearestCustomer(Route route, HashSet<Integer> customerInRoute){
         int currentSelectedCustomer=-1;
         for(int i=1; i<instance.getNodes().size(); i++)
         {
@@ -105,7 +131,7 @@ public class Population {
 //        System.out.println(currentSelectedCustomer);
         return currentSelectedCustomer;
     }
-    private static int getRandomCustomer(ArrayList<Integer> customerInRoute){
+    private static int getRandomCustomer(HashSet<Integer> customerInRoute){
         int currentSelectedCustomer=random.nextInt(1,instance.getNodes().size());
         if(customerInRoute.size()>instance.getNodes().size()*0.8){
             for(int i=1; i<instance.getNodes().size(); i++)
@@ -125,11 +151,15 @@ public class Population {
     }
     public static boolean feasibility(Route route, int customer){
         ArrayList<String> customerDetails = instance.getNodes().get(customer);
+        ArrayList<String> depot = instance.getNodes().get(0);
         String key=route.getCustomers().getLast()+","+customer;
         ArrayList<String> routeDetails = instance.getNodesDistance().get(key);
+        key=customer+",0";
+        ArrayList<String> lastRouteDetails = instance.getNodesDistance().get(key);
         double delivery = Double.parseDouble(customerDetails.get(0));
         double pickup = Double.parseDouble(customerDetails.get(1));
         double currentTime = route.getTotalTime()+Double.parseDouble(routeDetails.getLast());
+        double timeToDepot;
         if(route.getCurrentCapacity()-delivery+pickup>instance.getVehicleCapacity())
             return false;
         else if(Double.parseDouble(customerDetails.get(3))< currentTime) {
@@ -137,6 +167,12 @@ public class Population {
         } else if (route.getStartingCapacity()+delivery>instance.getVehicleCapacity()) {
             return false;
         }
-        return true;
+        if(currentTime<Double.parseDouble(customerDetails.get(2))){
+            timeToDepot = Double.parseDouble(customerDetails.get(2))+Double.parseDouble(customerDetails.get(4))+Double.parseDouble(lastRouteDetails.getLast());
+            return !(timeToDepot > Double.parseDouble(depot.get(3)));
+        }else {
+            timeToDepot = currentTime+Double.parseDouble(customerDetails.get(4))+Double.parseDouble(lastRouteDetails.getLast());
+            return !(timeToDepot > Double.parseDouble(depot.get(3)));
+        }
     }
 }
