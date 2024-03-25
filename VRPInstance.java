@@ -1,6 +1,8 @@
 import java.util.ArrayList;
 import java.util.HashMap;
 
+
+//creates a class for the dataset
 public class VRPInstance {
     private final int dimension;
     private final int vehicle;
@@ -22,6 +24,7 @@ public class VRPInstance {
     public int getDimension() {
         return dimension;
     }
+
 
     public int getVehicle() {
         return vehicle;

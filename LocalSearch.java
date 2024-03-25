@@ -2,9 +2,11 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 
+//Local search
 public class LocalSearch {
     private static final Random r = new Random(System.currentTimeMillis());
 
+    // Perform local search on pSearch proportion of the population
     public static void Search(ArrayList<Chromosome> pop, double pSearch, VRPInstance vrp) {
         int minpop = (int) (pop.size() * pSearch);
         for (int i = 0; i < pop.size(); i++) {
@@ -14,42 +16,39 @@ public class LocalSearch {
         }
     }
 
+    //Performs greedy local search
     private static Chromosome greedyLocalSearch(Chromosome chromosome, VRPInstance vrp) {
         Chromosome relocateChromosome = new Chromosome(new ArrayList<>(chromosome.getSolution()), chromosome.getFitness());
         Chromosome swapChromosome = new Chromosome(new ArrayList<>(chromosome.getSolution()), chromosome.getFitness());
         Chromosome two_optChromosome = new Chromosome(new ArrayList<>(chromosome.getSolution()), chromosome.getFitness());
         Chromosome invertedChromosome = new Chromosome(new ArrayList<>(chromosome.getSolution()), chromosome.getFitness());
         Chromosome maxChromosome =  chromosome;
-//        System.out.println(chromosome.getSolution());
-//        System.out.println(chromosome.getFitness());
+        //Returns the best solution for a chromosome using Relocate local search
         relocateChromosome = relocateLocalSearch(relocateChromosome, vrp);
         if(maxChromosome.getFitness()>relocateChromosome.getFitness())
             maxChromosome = relocateChromosome;
-//        System.out.println(relocateChromosome.getSolution());
-//        System.out.println(relocateChromosome.getFitness());
+        //Returns the best solution for a chromosome using Swap local search
         swapChromosome = swapLocalSearch(swapChromosome, vrp);
         if(maxChromosome.getFitness()>swapChromosome.getFitness())
             maxChromosome=swapChromosome;
-//        System.out.println(swapChromosome.getFitness());
+        //Returns the best solution for a chromosome using Two_opt local search
         two_optChromosome = two_optLocalSearch(two_optChromosome, vrp);
         if(maxChromosome.getFitness()>two_optChromosome.getFitness())
             maxChromosome=two_optChromosome;
-//        System.out.println(two_optChromosome.getFitness());
+        //Returns the best solution for a chromosome using Inversion local search
         invertedChromosome = invertedLocalSearch(invertedChromosome, vrp);
         if(maxChromosome.getFitness()>invertedChromosome.getFitness())
             maxChromosome=invertedChromosome;
-//        System.out.println(invertedChromosome.getFitness());
-//        System.out.println(chromosome.getFitness());
+        //Loops until solution cannot improve further
         if(maxChromosome.getFitness()==chromosome.getFitness())
             return new Chromosome(chromosome.getSolution(), chromosome.getFitness());
         else
             return greedyLocalSearch(maxChromosome,vrp);
     }
 
-
+    //Relocate Local Search
     private static Chromosome relocateLocalSearch(Chromosome chromosome, VRPInstance vrp) {
         Chromosome tempChromosome;
-        //System.out.println("uu "+chromosome.getFitness());
         boolean isUpgraded=true;
         int loop = 0;
         int relocateGene;
@@ -65,6 +64,7 @@ public class LocalSearch {
         return new Chromosome(chromosome.getSolution(),chromosome.getFitness());
     }
 
+    // performs relocation of a customer
     private static Chromosome relocateGene(Chromosome ch, int relocateGene, int position, VRPInstance vrp) {
         ArrayList<ArrayList<Integer>> tempChromosome = new ArrayList<>();
         ArrayList<Integer> tempRoute;
@@ -98,9 +98,9 @@ public class LocalSearch {
         return new Chromosome(tempChromosome,0.0);
     }
 
+    //Swap Local Search
     private static Chromosome swapLocalSearch(Chromosome chromosome, VRPInstance vrp) {
         Chromosome tempChromosome;
-        //System.out.println("uu "+chromosome.getFitness());
         boolean isUpgraded=true;
         int loop = 0;
         int gene1 ;
@@ -118,23 +118,21 @@ public class LocalSearch {
         return new Chromosome(chromosome.getSolution(),chromosome.getFitness());
     }
 
+    //Check if the new chromosome is an upgrade of the current chromosome
+    //Or Chromosome has been improved
     private static boolean isValidChromosome(Chromosome chromosome, VRPInstance vrp, Chromosome tempChromosome, boolean isUpgraded) {
         if (tempChromosome != null) {
-//                    System.out.println("yes");
             FitnessFunction.evaluate(new ArrayList<>(List.of(tempChromosome)), vrp);
-//            System.out.println(chromosome.getFitness()+"--"+chromosome.getSolution().getFirst()+">"+tempChromosome.getFitness());
             if (chromosome.getFitness() > tempChromosome.getFitness()) {
                 chromosome.setSolution(tempChromosome.getSolution());
                 chromosome.setFitness(tempChromosome.getFitness());
                 isUpgraded = true;
-//                System.out.println("yes");
-//                        System.out.println(""+chromosome.getSolution());
-//                        System.out.println("--- "+chromosome.getFitness());
             }
         }
         return isUpgraded;
     }
 
+    //Swaps customers
     private static Chromosome swapGene(Chromosome ch, int gene1, int gene2, VRPInstance vrp) {
         ArrayList<ArrayList<Integer>> tempChromosome = new ArrayList<>();
         ArrayList<Integer> tempRoute;
@@ -168,9 +166,9 @@ public class LocalSearch {
         return new Chromosome(tempChromosome,0.0);
     }
 
+    //Two opt Local Search
     private static Chromosome two_optLocalSearch(Chromosome chromosome, VRPInstance vrp) {
         Chromosome tempChromosome;
-        //System.out.println("uu "+chromosome.getFitness());
         for(int i=0; i<5; i++) {
             boolean isUpgraded = true;
             int dividePosition = 0;
@@ -191,6 +189,7 @@ public class LocalSearch {
         return new Chromosome(chromosome.getSolution(),chromosome.getFitness());
     }
 
+    //Perform division and addition of route
     private static Chromosome two_optGene(Chromosome ch, int route1Position, int route2Position, VRPInstance vrp, int dividePosition) {
         ArrayList<ArrayList<Integer>> tempChromosome = new ArrayList<>();
         ArrayList<Integer> tempRoute;
@@ -218,7 +217,6 @@ public class LocalSearch {
                 if(check)
                 {
                     if (routeFeasibility(tempRoute, vrp)) {
-//                        System.out.println("yes");
                         tempChromosome.add(tempRoute);
                     } else
                         return null;
@@ -231,6 +229,7 @@ public class LocalSearch {
         return new Chromosome(tempChromosome,0.0);
     }
 
+    //adds up divided route by Two-opt
     private static void divideRoute(Chromosome ch, int routePosition, ArrayList<Integer> route, ArrayList<Integer> tempRoute,int dividePosition) {
         ArrayList<Integer> integers = new ArrayList<>(ch.getSolution().get(routePosition));
         for(int g = 0; g< integers.size(); g++){
@@ -241,9 +240,9 @@ public class LocalSearch {
             }
         }
     }
+    //Inversion Local Search
     private static Chromosome invertedLocalSearch(Chromosome chromosome, VRPInstance vrp) {
         Chromosome tempChromosome;
-        //System.out.println("uu "+chromosome.getFitness());
         boolean isUpgraded=true;
         int loop = 0;
         int invertedRoute;
@@ -261,6 +260,7 @@ public class LocalSearch {
         return new Chromosome(chromosome.getSolution(),chromosome.getFitness());
     }
 
+    //Invert customers
     private static Chromosome invertGene(Chromosome ch, int invertedRoute, VRPInstance vrp) {
         ArrayList<ArrayList<Integer>> tempChromosome = new ArrayList<>();
         ArrayList<Integer> tempRoute;
@@ -301,6 +301,7 @@ public class LocalSearch {
         return new Chromosome(tempChromosome,0.0);
     }
 
+    //Checks if route is feasible
     public static boolean routeFeasibility(ArrayList<Integer> route, VRPInstance vrp){
         double currentCapacity=0.0;
         double startingCapacity=0.0;
@@ -311,7 +312,6 @@ public class LocalSearch {
             customerDetails = vrp.getNodes().get(route.get(i));
             startingCapacity+=Double.parseDouble(customerDetails.getFirst());
             if(startingCapacity> vrp.getVehicleCapacity()) {
-//                System.out.println("start "+startingCapacity+" --- "+vrp.getVehicleCapacity());
                 return false;
             }
             if(totalTime>Double.parseDouble(customerDetails.get(3)))
@@ -327,7 +327,6 @@ public class LocalSearch {
         for (int customer: route){
             currentCapacity+=Double.parseDouble(vrp.getNodes().get(customer).get(1)) - Double.parseDouble(vrp.getNodes().get(customer).getFirst());
             if(currentCapacity> vrp.getVehicleCapacity()) {
-//                System.out.println("start "+currentCapacity+" --- "+vrp.getVehicleCapacity());
                 return false;
             }
         }

@@ -6,6 +6,8 @@ public class Route {
     private double totalTime;
     private final ArrayList<Integer> customers = new ArrayList<>();
 
+    //creates a route with a single customer calculating its starting capacity, total
+    //capacity during delivery and pickup and the time window after serving the customer
     public Route(int customer , ArrayList<String> customerDetail, ArrayList<String> routeDetails) {
         startingCapacity =Double.parseDouble(customerDetail.getFirst());
         currentCapacity = Double.parseDouble(customerDetail.get(1));
@@ -17,12 +19,6 @@ public class Route {
         else
             totalTime = timeTo+servingTime;
         customers.add(customer);
-//        if(customer==163){
-//            System.out.println("*****");
-//            System.out.println(customerDetail);
-//            System.out.println(routeDetails);
-//            System.out.println(getTotalTime());
-//        }
     }
 
     public double getCurrentCapacity() {
@@ -53,6 +49,7 @@ public class Route {
         return customers;
     }
 
+    //Add a customer and update the variables of the route
     public void addCustomers(int customer,ArrayList<String> customerDetail, ArrayList<String> routeDetails) {
         setStartingCapacity (Double.parseDouble(customerDetail.getFirst()));
         setCurrentCapacity(Double.parseDouble(customerDetail.get(1))-Double.parseDouble(customerDetail.getFirst()));

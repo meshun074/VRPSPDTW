@@ -1,6 +1,8 @@
 import java.util.ArrayList;
 
 public class Chromosome {
+    //Each solution is an arraylist of arraylist of integers
+    //where the arraylist of integers are routes
     private ArrayList<ArrayList<Integer>> solution;
     private double fitness;
     public Chromosome(ArrayList<ArrayList<Integer>> solution, double fitness){

@@ -5,29 +5,28 @@ public class GeneticAlgorithm {
     private static final Random r = new Random(System.currentTimeMillis());
 
     public void startGA(int gen, int PopSize, double elitismRate, int tsRate, int fSearch, double pSearch,File file) {
+        // create and store a class for the dataset
         VRPInstance vrp = GetData.readData(file);
+        //Initialize population
         ArrayList<Chromosome> population = Population.initializePopulation(PopSize, vrp);
         ArrayList<Chromosome> newPopulation;
         ArrayList<Chromosome> tempPopulation;
+        //Evaluate fitness of population
         FitnessFunction.evaluate(population, vrp);
+        //Sort population
         sortPop(population);
+        //Local Search
         LocalSearch.Search(population, pSearch, vrp);
         sortPop(population);
         System.out.println("Generation 0 Best Fitness "+population.getFirst().getFitness()+" Average Fitness "+averageFitness(population));
         for (int i = 1; i <= gen; i++) {
-
+            //Maintains elitism
             newPopulation = new ArrayList<>(elitismPopulation(population, elitismRate));
-//            FitnessFunction.evaluate(newPopulation,vrp);
-//            newPopulation.forEach(x->System.out.println(x.getFitness()));
+            //Performs tournament selection
             tempPopulation = new ArrayList<>(tournamentSelection(population, tsRate));
-//            tempPopulation.forEach(x->System.out.println(x.getFitness()));
-            //Testing
-            System.out.println("Before");
-            printEachChromosomeSize(population);
+            //Performs Best cost Route crossover with destruction
             BCRCD(tempPopulation, newPopulation, vrp);
-            //Testing
-            System.out.println("After");
-            printEachChromosomeSize(population);
+            //Update population
             for (int ch=0; ch<population.size();ch++)
                 population.get(ch).setSolution(newPopulation.get(ch).getSolution());
             FitnessFunction.evaluate(population, vrp);
@@ -37,22 +36,14 @@ public class GeneticAlgorithm {
                 sortPop(population);
             }
             System.out.println("Generation "+i+" Best Fitness "+population.getFirst().getFitness()+" Average Fitness "+averageFitness(population));
+            //prints solution in the last solution
             if (i==gen)
                 System.out.println(population.getFirst().getSolution().size()+" === "+population.getFirst().getSolution());
-//            break;
         }
-//        for (ArrayList<Integer> route: population.getFirst().getSolution())
-//            if(!LocalSearch.routeFeasibility(route, vrp)) {
-//                System.out.println(route);
-//            }
-//        Route r = new Route( 163,vrp.getNodes().get(163),vrp.getNodesDistance().get("0,163"));
-//        System.out.println("-----");
-//        System.out.println(r.getCustomers());
-//        System.out.println(r.getTotalTime());
-//        System.out.println(Population.feasibility(r,110));
     }
 
 
+    //Performs elitism
     private ArrayList<Chromosome> elitismPopulation(ArrayList<Chromosome> population, double elitismRate) {
         sortPop(population);
         ArrayList<ArrayList<Integer>> solution;
@@ -73,10 +64,12 @@ public class GeneticAlgorithm {
         return elitismPop;
     }
 
+    //Sort population
     private void sortPop(ArrayList<Chromosome> pop) {
         pop.sort(Comparator.comparingDouble(Chromosome::getFitness));
     }
 
+    //Calculate average fitness
     private double averageFitness(ArrayList<Chromosome> pop) {
         double average = 0.0;
         for (Chromosome ch : pop)
@@ -84,6 +77,7 @@ public class GeneticAlgorithm {
         return average / pop.size();
     }
 
+    //Performs tournament selection
     private ArrayList<Chromosome> tournamentSelection(ArrayList<Chromosome> population, int tsRate) {
         ArrayList<Chromosome> TSpop = new ArrayList<>();
         ArrayList<Chromosome> temp;
@@ -98,6 +92,7 @@ public class GeneticAlgorithm {
         return TSpop;
     }
 
+    //Crossover
     private void BCRCD(ArrayList<Chromosome> tempPopulation, ArrayList<Chromosome> newPopulation, VRPInstance vrp) {
         Chromosome c1;
         Chromosome c2;
@@ -121,6 +116,7 @@ public class GeneticAlgorithm {
 
     }
 
+    //cross two parents (customers)
     private void crossover(Chromosome c1, Chromosome c2, VRPInstance vrp, ArrayList<Chromosome> newPopulation, int limit) {
         int indexRandomRoute1 =0;
         int indexRandomRoute2 =0;
@@ -134,26 +130,10 @@ public class GeneticAlgorithm {
         }
         ArrayList<Integer> randomRoute1 = c1.getSolution().get(indexRandomRoute1);
         ArrayList<Integer> randomRoute2 = c2.getSolution().get(indexRandomRoute2);
-        //Testing
-//        System.out.println("Route 1");
-//        System.out.println(randomRoute1);
-//        System.out.println("Route 2");
-//        System.out.println(randomRoute2);
         ArrayList<ArrayList<Integer>> tempSolution = new ArrayList<>();
         ArrayList<Integer> removedGenes = new ArrayList<>(randomRoute1);
-//        System.out.println("Before"+getChromosomeSize(c1.getSolution())+" "+removedGenes.size()+" "+randomRoute1.size()+" "+randomRoute2.size());
         removeRouteAndGenes(c1, vrp, randomRoute1, randomRoute2, removedGenes, tempSolution);
-//        if(getChromosomeSize(tempSolution)+removedGenes.size()!=200) {
-//            System.out.println("After"+getChromosomeSize(tempSolution)+" "+removedGenes.size()+" "+randomRoute1.size());
-//            System.out.println("Asem oo");
-//        }
-        //testing
-//        System.out.println("Route 1 after removal");
-//        System.out.println(tempSolution);
         tempSolution = insertionOfGenes(tempSolution, removedGenes, vrp);
-//        System.out.println("Route 1 after insertion");
-//        System.out.println(tempSolution);
-//        System.out.println("Newpopulation size " + newPopulation.size());
         newPopulation.add(new Chromosome(tempSolution, 0.0));
         if (newPopulation.size() < limit) {
             tempSolution = new ArrayList<>();
@@ -162,10 +142,9 @@ public class GeneticAlgorithm {
             tempSolution = insertionOfGenes(tempSolution, removedGenes, vrp);
             newPopulation.add(new Chromosome(tempSolution, 0.0));
         }
-        //Testing
-//        System.out.println("Newpopulation size " + newPopulation.size());
     }
 
+    // remove customers for BCRCD
     private static void removeRouteAndGenes(Chromosome c1, VRPInstance vrp, ArrayList<Integer> randomRoute1, ArrayList<Integer> randomRoute2, ArrayList<Integer> removedGenes, ArrayList<ArrayList<Integer>> tempSolution) {
         ArrayList<Integer> tempRoute;
         ArrayList<Integer> testRoute;
@@ -192,14 +171,13 @@ public class GeneticAlgorithm {
         }
     }
 
+    //Insert customer for BCRCD
     private ArrayList<ArrayList<Integer>> insertionOfGenes(ArrayList<ArrayList<Integer>> solution, ArrayList<Integer> removedGenes, VRPInstance vrp) {
-//        System.out.println(getChromosomeSize(solution)+removedGenes.size());
         ArrayList<ArrayList<Integer>> tempSolution;
         ArrayList<Integer> tempRoute;
         ArrayList<Chromosome> currentChromosomeBestSolution;
         for (int removeGene : removedGenes) {
             currentChromosomeBestSolution = new ArrayList<>();
-//            currentChromosomeBestSolution.add(new Chromosome(solution,0.0));
             for (ArrayList<Integer> route : solution) {
                 for (int i = 0; i <= route.size(); i++) {
                     tempRoute = new ArrayList<>(route);
@@ -220,10 +198,11 @@ public class GeneticAlgorithm {
                 solution.add(tempRoute);
             }
         }
-//        printChromosomeSize(solution);
         return solution;
     }
 
+    //Replaces route
+    //used by BCRCD to perform greedy insertion of customer in finding the best route.
     private ArrayList<ArrayList<Integer>> getCandidateSolution(ArrayList<ArrayList<Integer>> solution, ArrayList<Integer> routeToRemove, ArrayList<Integer> routeToReplace) {
         ArrayList<ArrayList<Integer>> tempSolution = new ArrayList<>();
         ArrayList<Integer> tempRoute;
@@ -237,6 +216,7 @@ public class GeneticAlgorithm {
         return tempSolution;
     }
 
+    //Checks if chromosome are the same
     private boolean equalChromosome(Chromosome c1, Chromosome c2) {
         for (int i = 0; i < Math.min(c1.getSolution().size(), c2.getSolution().size()); i++) {
             if (!c1.getSolution().contains(c2.getSolution().get(i))) {
@@ -244,34 +224,5 @@ public class GeneticAlgorithm {
             }
         }
         return true;
-    }
-
-    private void printEachChromosomeSize(ArrayList<Chromosome> pop){
-        int total;
-        for (Chromosome ch: pop){
-            total=0;
-            for( ArrayList<Integer> route: ch.getSolution()){
-                total+=route.size();
-            }
-            if(total!=200) {
-                System.out.println("Yieeeeeee mawu oo - "+total);
-            }
-        }
-    }
-    private void printChromosomeSize(ArrayList<ArrayList<Integer>>  ch){
-        int total=0;
-        for (ArrayList<Integer> route: ch){
-            total+=route.size();
-        }
-        if(total!=200) {
-            System.out.println("Hmmm mabre oo - "+total);
-        }
-    }
-    private int getChromosomeSize(ArrayList<ArrayList<Integer>>  ch){
-        int total=0;
-        for (ArrayList<Integer> route: ch){
-            total+=route.size();
-        }
-        return total;
     }
 }

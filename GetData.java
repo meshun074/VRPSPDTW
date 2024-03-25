@@ -5,6 +5,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Scanner;
 
+//data about VRP problem from a file
 public class GetData {
     public static VRPInstance readData(File file){
         int dimension = 0;
@@ -22,20 +23,25 @@ public class GetData {
             while (scanner.hasNext()){
                 txt=scanner.nextLine();
                 if(section < 1) {
+                    //number of nodes
                     if (txt.contains("DIMENSION")) {
                         dimension = Integer.parseInt(getInteger(txt));
+                        //number of vehicles
                     } else if (txt.contains("VEHICLES"))
                         vehicle = Integer.parseInt(getInteger(txt));
                     else if (txt.contains("DISPATCHINGCOST"))
                         dispatchCost = Double.parseDouble(getInteger(txt));
                     else if (txt.contains("UNITCOST"))
                         unitCost = Double.parseDouble(getInteger(txt));
+                    //Vehicle capacity
                     else if (txt.contains("CAPACITY"))
                         vehicleCapacity = Double.parseDouble(getInteger(txt));
+                    //customers and their requirement (time window, delivery and pickup)
                     else if (txt.contains("NODE_SECTION")) {
                         section++;
                     }
                 }else if(section < 2){
+                    //Distance and time between nodes info
                     if(txt.contains("DISTANCETIME_SECTION"))
                         section++;
                     else {
