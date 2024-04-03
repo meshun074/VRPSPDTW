@@ -108,7 +108,8 @@ public class GeneticAlgorithm {
                     count++;
                     c2 = tempPopulation.get(r.nextInt(tempPopulation.size()));
                 }
-                crossover(c1, c2, vrp, newPopulation, tempPopulation.size());
+                for(int j=0; j<r.nextInt(1,4); j++)
+                    crossover(c1, c2, vrp, newPopulation, tempPopulation.size());
             }
             else
                 break;

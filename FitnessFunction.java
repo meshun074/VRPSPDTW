@@ -24,7 +24,10 @@ public class FitnessFunction {
                     }
                 }
             }
-            chromosome.setFitness(vrp.getUnitCost()*numberOfRoute+ vrp.getDispatchCost()*totalDistance);
+            chromosome.setFitness(vrp.getUnitCost()*totalDistance+ vrp.getDispatchCost()*numberOfRoute);
         }
     }
 }
+// exchange unit cost and dispatch cost
+//focus on distance only in (time + distance)
+//Redo of Local

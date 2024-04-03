@@ -62,7 +62,7 @@ public class Population {
     }
     //Gets the nearest customer that can be added to a route without making the route infeasible
     private static int getNearestCustomer(Route route, HashSet<Integer> customerInRoute){
-        int currentSelectedCustomer=-1;
+        int currentSelectedCustomer;
         ArrayList<Integer> customersNotInRoute = new ArrayList<>();
         //The customer must not already be in the route or any route
         for(int i=1; i<instance.getNodes().size(); i++)
@@ -79,15 +79,15 @@ public class Population {
         String key;
         key=endingCustomer+","+currentSelectedCustomer;
         ArrayList<String> routeSection= new ArrayList<>(instance.getNodesDistance().get(key));
-        //sets the curret best distance + time
-        double bestNearestDistanceTime = Double.parseDouble(routeSection.getFirst())+Double.parseDouble(routeSection.getLast());
+        //sets the curret best distance
+        double bestNearestDistanceTime = Double.parseDouble(routeSection.getFirst());
         double tempDistanceTime;
         //Loop to find the best distance from the last customer of the route to the closest customer not assigned to a route yet.
         for(int i :customersNotInRoute){
             if(i!=endingCustomer&&!customerInRoute.contains(i)&& i!=customersNotInRoute.getFirst()){
                 key = endingCustomer + "," + i;
                 routeSection = new ArrayList<>(instance.getNodesDistance().get(key));
-                tempDistanceTime = Double.parseDouble(routeSection.getFirst()) + Double.parseDouble(routeSection.getLast());
+                tempDistanceTime = Double.parseDouble(routeSection.getFirst());
                 if (bestNearestDistanceTime > tempDistanceTime) {
                     bestNearestDistanceTime = tempDistanceTime;
                     currentSelectedCustomer = i;
@@ -141,10 +141,9 @@ public class Population {
         //checks if a return to the depot satisfies the route constraints
         if(currentTime<Double.parseDouble(customerDetails.get(2))){
             timeToDepot = Double.parseDouble(customerDetails.get(2))+Double.parseDouble(customerDetails.get(4))+Double.parseDouble(lastRouteDetails.getLast());
-            return !(timeToDepot > Double.parseDouble(depot.get(3)));
         }else {
             timeToDepot = currentTime+Double.parseDouble(customerDetails.get(4))+Double.parseDouble(lastRouteDetails.getLast());
-            return !(timeToDepot > Double.parseDouble(depot.get(3)));
         }
+        return !(timeToDepot > Double.parseDouble(depot.get(3)));
     }
 }
