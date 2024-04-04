@@ -6,11 +6,10 @@ public class LocalSearch {
 
     // Perform local search on pSearch proportion of the population
     public static void Search(ArrayList<Chromosome> pop, double pSearch, VRPInstance vrp) {
-        int minpop = (int) (pop.size() * pSearch);
         for (int i = 0; i < pop.size(); i++) {
-            if (i % minpop == 0) {
+            if(Math.random()<pSearch)
                 pop.set(i, greedyLocalSearch(pop.get(i), vrp));
-            }
+
         }
     }
 

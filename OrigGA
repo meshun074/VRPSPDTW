@@ -13,6 +13,8 @@ public class GeneticAlgorithm {
         ArrayList<Chromosome> tempPopulation;
         //Evaluate fitness of population
         FitnessFunction.evaluate(population, vrp);
+        //Sort population
+        //sortPop(population);
         //Local Search
         LocalSearch.Search(population, pSearch, vrp);
         sortPop(population);
@@ -107,7 +109,7 @@ public class GeneticAlgorithm {
                     count++;
                     c2 = tempPopulation.get(r.nextInt(tempPopulation.size()));
                 }
-                for(int j=0; j<r.nextInt(1,3); j++)
+                for(int j=0; j<r.nextInt(1,4); j++)
                     crossover(c1, c2, vrp, newPopulation, tempPopulation.size());
             }
             else
@@ -120,45 +122,28 @@ public class GeneticAlgorithm {
     private void crossover(Chromosome c1, Chromosome c2, VRPInstance vrp, ArrayList<Chromosome> newPopulation, int limit) {
         int indexRandomRoute1 =0;
         int indexRandomRoute2 =0;
-        int indexRandomRoute12 =0;
-        int indexRandomRoute22 =0;
         try{
             sortSolutionRoutes(c1);
             sortSolutionRoutes(c2);
             indexRandomRoute1 = r.nextInt(c1.getSolution().size());
-            indexRandomRoute12 = r.nextInt(c1.getSolution().size());
             indexRandomRoute2 = r.nextInt(c2.getSolution().size());
-            indexRandomRoute22 = r.nextInt(c2.getSolution().size());
-            while (indexRandomRoute12==indexRandomRoute1||indexRandomRoute22==indexRandomRoute2){
-                indexRandomRoute12 = r.nextInt(c1.getSolution().size());
-                indexRandomRoute22 = r.nextInt(c2.getSolution().size());
-            }
         }catch (IllegalArgumentException e){
             System.out.println(c1.getSolution());
             System.out.println(c2.getSolution());
             System.exit(1);
         }
-        //select and uses two routes from each solution for crossover
-        ArrayList<ArrayList<Integer>> randomFirstRoutes = new ArrayList<>();
-        randomFirstRoutes.add(c1.getSolution().get(indexRandomRoute1));
-        randomFirstRoutes.add(c1.getSolution().get(indexRandomRoute12));
-        ArrayList<ArrayList<Integer>> randomSecondRoutes = new ArrayList<>();
-        randomSecondRoutes.add(c2.getSolution().get(indexRandomRoute2));
-        randomSecondRoutes.add(c2.getSolution().get(indexRandomRoute22));
+        ArrayList<Integer> randomRoute1 = c1.getSolution().get(indexRandomRoute1);
+        ArrayList<Integer> randomRoute2 = c2.getSolution().get(indexRandomRoute2);
         ArrayList<ArrayList<Integer>> tempSolution = new ArrayList<>();
-        ArrayList<Integer> removedGenes = new ArrayList<>(randomFirstRoutes.getFirst());
-        removedGenes.addAll(randomFirstRoutes.getLast());
-        //remove customers
-        removeRouteAndGenes(c1, vrp, randomFirstRoutes, randomSecondRoutes, removedGenes, tempSolution);
+        ArrayList<Integer> removedGenes = new ArrayList<>(randomRoute1);
+        removeRouteAndGenes(c1, vrp, randomRoute1, randomRoute2, removedGenes, tempSolution);
         Collections.shuffle(removedGenes);
-        //randomly insert removed customers
         tempSolution = insertionOfGenes(tempSolution, removedGenes, vrp);
         newPopulation.add(new Chromosome(tempSolution, 0.0));
         if (newPopulation.size() < limit) {
             tempSolution = new ArrayList<>();
-            removedGenes = new ArrayList<>(randomSecondRoutes.getFirst());
-            removedGenes.addAll(randomSecondRoutes.getLast());
-            removeRouteAndGenes(c2, vrp, randomSecondRoutes, randomFirstRoutes, removedGenes, tempSolution);
+            removedGenes = new ArrayList<>(randomRoute2);
+            removeRouteAndGenes(c2, vrp, randomRoute2, randomRoute1, removedGenes, tempSolution);
             Collections.shuffle(removedGenes);
             tempSolution = insertionOfGenes(tempSolution, removedGenes, vrp);
             newPopulation.add(new Chromosome(tempSolution, 0.0));
@@ -169,15 +154,15 @@ public class GeneticAlgorithm {
     }
 
     // remove customers for BCRCD
-    private static void removeRouteAndGenes(Chromosome c1, VRPInstance vrp, ArrayList< ArrayList<Integer>> randomRoute1, ArrayList< ArrayList<Integer>> randomRoute2, ArrayList<Integer> removedGenes, ArrayList<ArrayList<Integer>> tempSolution) {
+    private static void removeRouteAndGenes(Chromosome c1, VRPInstance vrp, ArrayList<Integer> randomRoute1, ArrayList<Integer> randomRoute2, ArrayList<Integer> removedGenes, ArrayList<ArrayList<Integer>> tempSolution) {
         ArrayList<Integer> tempRoute;
         ArrayList<Integer> testRoute;
         for (ArrayList<Integer> route : c1.getSolution()) {
-            if (!route.equals(randomRoute1.getFirst())&&!route.equals(randomRoute1.getLast())) {
+            if (!route.equals(randomRoute1)) {
                 tempRoute = new ArrayList<>(route);
                 testRoute = new ArrayList<>(tempRoute);
                 for (Integer gene : route) {
-                    if (randomRoute2.getFirst().contains(gene)||randomRoute2.getLast().contains(gene)) {
+                    if (randomRoute2.contains(gene)) {
                         testRoute.remove(gene);
                         if (!testRoute.isEmpty()) {
                             if (LocalSearch.routeFeasibility(testRoute, vrp)) {
